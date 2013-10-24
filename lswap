@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for SMAPS in /proc/*/smaps; do
+	DIR=$(dirname "$SMAPS")
+	PID=$(basename "$DIR")
+	echo -n "Process ID $PID "
+	ls -al "$DIR/exe" 2> /dev/null
+	(
+		grep VmSwap: "$DIR/status"
+		ps uw -p "$PID"
+		grep '^\([0-9af][0-9a-f]*-[0-9af][0-9a-f]* .... \|Swap: \)' "$SMAPS" | grep -B1 -A0 '^Swap:  *[1-9][0-9]* kB$' | grep -v '^--'
+	) 2> /dev/null | sed -e 's/^/\x09/'
+done
